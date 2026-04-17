@@ -92,3 +92,94 @@ JOIN estudiantes e ON e.carnet = m.carnet_estu
 WHERE a.creditos = 10
   AND m.nota = 7
   AND e.creditos = 50;
+
+-- Cuestión 8:
+
+DROP TABLE IF EXISTS "Entradas", "Grupos_Tocan_Conciertos", "Grupo_Musico", "Canciones", "Discos", "Conciertos", "Grupos", "Musicos" CASCADE;
+DROP TABLE IF EXISTS "Entradas" cascade;
+
+CREATE TABLE "Musicos" (
+    codigo_musico INT PRIMARY KEY,
+    DNI CHAR(10) UNIQUE NOT NULL,
+    Nombre TEXT NOT NULL,
+    Direccion TEXT NOT NULL,
+    Codigo_Postal INT NOT NULL,
+    Ciudad TEXT NOT NULL,
+    Provincia TEXT NOT NULL,
+    telefono INT NOT NULL,
+    Instrumentos TEXT NOT NULL
+);
+
+CREATE TABLE "Grupos" (
+    Codigo_grupo INT PRIMARY KEY,
+    Nombre TEXT NOT NULL,
+    Genero_musical TEXT NOT NULL,
+    Pais TEXT NOT NULL,
+    Sitio_web TEXT NOT NULL
+);
+
+CREATE TABLE "Conciertos" (
+    Codigo_concierto INT PRIMARY KEY,
+    Fecha_realizacion DATE NOT NULL,
+    Pais TEXT NOT NULL,
+    Ciudad TEXT NOT NULL,
+    Recinto TEXT NOT NULL
+);
+
+CREATE TABLE "Discos" (
+    Codigo_disco INT PRIMARY KEY,
+    Titulo TEXT NOT NULL,
+    Fecha_edicion DATE NOT NULL,
+    Genero TEXT NOT NULL,
+    Formato TEXT NOT NULL,
+    Codigo_grupo INT,
+    FOREIGN KEY (Codigo_grupo) REFERENCES "Grupos"(Codigo_grupo)
+);
+
+CREATE TABLE "Canciones" (
+    Codigo_cancion INT PRIMARY KEY,
+    Nombre TEXT NOT NULL,
+    Compositor TEXT NOT NULL,
+    Fecha_grabacion DATE NOT NULL,
+    Duracion TIME NOT NULL,
+    Codigo_disco INT,
+    FOREIGN KEY (Codigo_disco) REFERENCES "Discos"(Codigo_disco)
+);
+
+CREATE TABLE "Entradas" (
+    Codigo_entrada INT PRIMARY KEY,
+    Localidad TEXT NOT NULL,
+    Precio MONEY NOT NULL,
+    Usuario TEXT NOT NULL,
+    Codigo_concierto INT,
+    FOREIGN KEY (Codigo_concierto) REFERENCES "Conciertos"(Codigo_concierto)
+);
+
+CREATE TABLE "Grupos_Tocan_Conciertos" (
+    Codigo_grupo INT,
+    Codigo_concierto INT,
+    PRIMARY KEY (Codigo_grupo, Codigo_concierto),
+    FOREIGN KEY (Codigo_grupo) REFERENCES "Grupos"(Codigo_grupo),
+    FOREIGN KEY (Codigo_concierto) REFERENCES "Conciertos"(Codigo_concierto)
+);
+
+CREATE TABLE "Grupo_Musico" (
+    Codigo_grupo INT,
+    codigo_musico INT,
+    PRIMARY KEY (Codigo_grupo, codigo_musico),
+    FOREIGN KEY (Codigo_grupo) REFERENCES "Grupos"(Codigo_grupo),
+    FOREIGN KEY (codigo_musico) REFERENCES "Musicos"(codigo_musico)
+);
+
+
+COPY "Musicos" FROM 'C:/Tablas_MUSICOS/musicos.csv' CSV HEADER;
+COPY "Grupos" FROM 'C:/Tablas_MUSICOS/grupos.csv' CSV HEADER;
+COPY "Conciertos" FROM 'C:/Tablas_MUSICOS/conciertos.csv' CSV HEADER;
+COPY "Discos" FROM 'C:/Tablas_MUSICOS/discos.csv' CSV HEADER;
+COPY "Canciones" FROM 'C:/Tablas_MUSICOS/canciones.csv' CSV HEADER;
+COPY "Entradas" FROM 'C:/Tablas_MUSICOS/entradas.csv' CSV HEADER;
+COPY "Grupo_Musico" FROM 'C:/Tablas_MUSICOS/grupo_musico.csv' CSV HEADER;
+COPY "Grupos_Tocan_Conciertos" FROM 'C:/Tablas_MUSICOS/grupo_concierto.csv' CSV HEADER;
+
+
+ANALYZE;
