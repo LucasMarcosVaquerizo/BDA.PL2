@@ -149,7 +149,7 @@ CREATE TABLE "Canciones" (
 CREATE TABLE "Entradas" (
     Codigo_entrada INT PRIMARY KEY,
     Localidad TEXT NOT NULL,
-    Precio MONEY NOT NULL,
+    Precio NUMERIC(10,2),
     Usuario TEXT NOT NULL,
     Codigo_concierto INT,
     FOREIGN KEY (Codigo_concierto) REFERENCES "Conciertos"(Codigo_concierto)
@@ -183,3 +183,41 @@ COPY "Grupos_Tocan_Conciertos" FROM 'C:/Tablas_MUSICOS/grupo_concierto.csv' CSV 
 
 
 ANALYZE;
+
+
+--Cuestión 9:
+
+EXPLAIN ANALYSE
+SELECT
+    ROUND((COUNT(DISTINCT m.codigo_musico) * 100.0) / (SELECT COUNT(*) FROM "Musicos"), 4) AS porcentaje_musicos
+FROM "Musicos" m
+JOIN "Grupo_Musico" gm ON m.codigo_musico = gm.codigo_musico
+JOIN "Grupos" g ON gm.Codigo_grupo = g.Codigo_grupo
+JOIN "Grupos_Tocan_Conciertos" gtc ON g.Codigo_grupo = gtc.Codigo_grupo
+JOIN "Conciertos" c ON gtc.Codigo_concierto = c.Codigo_concierto
+JOIN "Entradas" e ON c.Codigo_concierto = e.Codigo_concierto
+JOIN "Discos" d ON g.Codigo_grupo = d.Codigo_grupo
+JOIN "Canciones" ca ON d.Codigo_disco = ca.Codigo_disco
+WHERE c.Pais = 'España'
+  -- Cast explícito para que el optimizador pueda comparar MONEY con NUMERIC
+  AND e.Precio::numeric BETWEEN 20 AND 50
+  AND d.Genero = 'Rock'
+  AND ca.Duracion > '00:03:00'
+  AND g.Codigo_grupo IN (
+      SELECT Codigo_grupo
+      FROM "Grupo_Musico"
+      GROUP BY Codigo_grupo
+      HAVING COUNT(codigo_musico) > 3
+  );
+
+--Comprobaciones para asegurarnos de la integridad referencial:
+SELECT count(*) FROM "Entradas" WHERE Precio::numeric BETWEEN 20 AND 50;
+SELECT count(*) FROM "Canciones" WHERE Duracion > '00:03:00';
+
+
+SELECT g.Nombre AS Grupo, c.Pais, c.Ciudad, c.Fecha_realizacion
+FROM "Grupos" g
+JOIN "Grupos_Tocan_Conciertos" gtc ON g.Codigo_grupo = gtc.Codigo_grupo
+JOIN "Conciertos" c ON gtc.Codigo_concierto = c.Codigo_concierto
+WHERE c.Pais = 'España'
+LIMIT 20;
