@@ -199,7 +199,6 @@ JOIN "Entradas" e ON c.Codigo_concierto = e.Codigo_concierto
 JOIN "Discos" d ON g.Codigo_grupo = d.Codigo_grupo
 JOIN "Canciones" ca ON d.Codigo_disco = ca.Codigo_disco
 WHERE c.Pais = 'España'
-  -- Cast explícito para que el optimizador pueda comparar MONEY con NUMERIC
   AND e.Precio::numeric BETWEEN 20 AND 50
   AND d.Genero = 'Rock'
   AND ca.Duracion > '00:03:00'
@@ -207,7 +206,7 @@ WHERE c.Pais = 'España'
       SELECT Codigo_grupo
       FROM "Grupo_Musico"
       GROUP BY Codigo_grupo
-      HAVING COUNT(codigo_musico) > 3
+      HAVING COUNT(DISTINCT codigo_musico) > 3
   );
 
 --Comprobaciones para asegurarnos de la integridad referencial:
